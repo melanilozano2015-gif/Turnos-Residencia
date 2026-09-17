@@ -1,0 +1,139 @@
+@model ResidenciaApp.Models.NinoAdolescente
+
+@{
+    ViewData["Title"] = "Editar";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-pencil"></i> Editar</h1>
+    <a asp-action="Index" class="btn btn-outline-primary">Volver</a>
+</div>
+
+<div class="form-page">
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="IdNinoAdolescente" />
+
+        <h2 class="form-section-title">Datos personales</h2>
+        <hr class="form-section-divider" />
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="Nombre" class="form-label">Nombre <span class="required">*</span></label>
+                <input asp-for="Nombre" class="form-control" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Apellido" class="form-label">Apellido <span class="required">*</span></label>
+                <input asp-for="Apellido" class="form-control" />
+                <span asp-validation-for="Apellido" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="Dni" class="form-label">DNI <span class="required">*</span></label>
+                <input asp-for="Dni" class="form-control" />
+                <span asp-validation-for="Dni" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="FechaNacimiento" class="form-label">Fecha de nacimiento <span class="required">*</span></label>
+                <input asp-for="FechaNacimiento" class="form-control" type="date" />
+                <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="Genero" class="form-label">Género</label>
+                <select asp-for="Genero" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Otro">Otro</option>
+                    <option value="No binario">No binario</option>
+                    <option value="Prefiero no decir">Prefiero no decir</option>
+                </select>
+                <span asp-validation-for="Genero" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Nacionalidad" class="form-label">Nacionalidad</label>
+                <input asp-for="Nacionalidad" class="form-control" />
+                <span asp-validation-for="Nacionalidad" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="LugarNacimiento" class="form-label">Lugar de nacimiento</label>
+                <input asp-for="LugarNacimiento" class="form-control" />
+                <span asp-validation-for="LugarNacimiento" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="NumeroExpediente" class="form-label">N° Expediente</label>
+                <input asp-for="NumeroExpediente" class="form-control" />
+                <span asp-validation-for="NumeroExpediente" class="text-danger"></span>
+            </div>
+        </div>
+
+        <h2 class="form-section-title">Contacto y situación</h2>
+        <hr class="form-section-divider" />
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="EstadoActual" class="form-label">Estado actual <span class="required">*</span></label>
+                <select asp-for="EstadoActual" class="form-select">
+                    <option value="En residencia">En residencia</option>
+                    <option value="Internado">Internado</option>
+                    <option value="Egresado">Egresado</option>
+                    <option value="En tratamiento">En tratamiento</option>
+                </select>
+                <span asp-validation-for="EstadoActual" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Escolaridad" class="form-label">Escolaridad</label>
+                <input asp-for="Escolaridad" class="form-control" placeholder="Ej: Secundario incompleto" />
+                <span asp-validation-for="Escolaridad" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="Telefono" class="form-label">Teléfono</label>
+                <input asp-for="Telefono" class="form-control" />
+                <span asp-validation-for="Telefono" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Email" class="form-label">Email</label>
+                <input asp-for="Email" class="form-control" type="email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="ObraSocial" class="form-label">Obra social</label>
+                <input asp-for="ObraSocial" class="form-control" />
+                <span asp-validation-for="ObraSocial" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <label asp-for="Domicilio" class="form-label">Domicilio</label>
+                <textarea asp-for="Domicilio" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Domicilio" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

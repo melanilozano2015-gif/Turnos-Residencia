@@ -1,0 +1,124 @@
+@model ResidenciaApp.Controllers.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    <span class="text-muted">@DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy")</span>
+</div>
+
+<!-- Tarjetas de estadísticas -->
+<div class="row mb-4">
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="text-muted text-uppercase" style="font-size: 12px;">Niños y Adolescentes</div>
+                <div style="font-size: 32px; font-weight: 600;">@Model.TotalNinos</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="text-muted text-uppercase" style="font-size: 12px;">Turnos Pendientes</div>
+                <div style="font-size: 32px; font-weight: 600;">@Model.TurnosPendientes</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="text-muted text-uppercase" style="font-size: 12px;">Turnos Hoy</div>
+                <div style="font-size: 32px; font-weight: 600;">@Model.TurnosHoy</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Últimos niños/as -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-people"></i> Últimos Registros
+            </div>
+            <div class="card-body">
+                @if (Model.UltimosNinos.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Apellido</th>
+                                    <th>DNI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var nino in Model.UltimosNinos)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-controller="Ninos" asp-action="Details" asp-route-id="@nino.IdNinoAdolescente">
+                                                @nino.Nombre
+                                            </a>
+                                        </td>
+                                        <td>@nino.Apellido</td>
+                                        <td>@nino.Dni</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No hay registros aún.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Próximos turnos -->
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-calendar-check"></i> Próximos Turnos
+            </div>
+            <div class="card-body">
+                @if (Model.ProximosTurnos.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Niño/Adolescente</th>
+                                    <th>Profesional</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var turno in Model.ProximosTurnos)
+                                {
+                                    <tr>
+                                        <td>@turno.NinoAdolescente?.Apellido</td>
+                                        <td>@turno.NombreProfesional</td>
+                                        <td>@turno.Fecha.ToString("dd/MM/yyyy") @turno.Hora.ToString("HH:mm")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No hay turnos programados.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

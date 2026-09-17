@@ -1,0 +1,168 @@
+@model IEnumerable<ResidenciaApp.Models.Turno>
+
+@{
+    ViewData["Title"] = "Turnos";
+    var tabActual = ViewData["Tab"]?.ToString() ?? "Todos";
+    var tipoSeleccionado = ViewData["TipoSeleccionado"]?.ToString() ?? "";
+    var searchActual = ViewData["SearchString"]?.ToString() ?? "";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-calendar-check"></i> Turnos</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nuevo Turno
+    </a>
+</div>
+
+<!-- Tabs de filtro -->
+<div class="turnos-tabs">
+    <a asp-action="Index" asp-route-tab="Todos"
+       class="turnos-tab @(tabActual == "Todos" ? "active" : "")">Todos</a>
+    <a asp-action="Index" asp-route-tab="Próximos"
+       class="turnos-tab @(tabActual == "Próximos" ? "active" : "")">Próximos</a>
+    <a asp-action="Index" asp-route-tab="Pasados"
+       class="turnos-tab @(tabActual == "Pasados" ? "active" : "")">Pasados</a>
+    <a asp-action="Index" asp-route-tab="Cancelados"
+       class="turnos-tab @(tabActual == "Cancelados" ? "active" : "")">Cancelados</a>
+</div>
+
+<!-- Filtros -->
+<div class="turnos-filters">
+    <form asp-action="Index" method="get">
+        <input type="hidden" name="tab" value="@tabActual" />
+
+        <div class="row align-items-end g-3">
+            <!-- Filtro de tipo -->
+            <div class="col-md-2">
+                <select name="tipo" class="form-select turnos-select">
+                    <option value="">Todos los tipos</option>
+                    <option value="Médico">Médico</option>
+                    <option value="Psicológico">Psicológico</option>
+                    <option value="Odontológico">Odontológico</option>
+                    <option value="Judicial">Judicial</option>
+                    <option value="Educativo">Educativo</option>
+                    <option value="Trabajo Social">Trabajo Social</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+
+            <!-- Búsqueda de texto -->
+            <div class="col-md-4">
+                <input type="text" name="search" value="@searchActual" class="form-control turnos-search"
+                       placeholder="Buscar por NNyA, profesional o tipo..." />
+            </div>
+
+            <!-- Filtro de estados -->
+            <div class="col-md-2">
+                <select name="estadoId" class="form-select turnos-select" asp-items="ViewBag.EstadoId">
+                    <option value="">Todos los estados</option>
+                </select>
+            </div>
+
+            <!-- Filtro de profesional -->
+            <div class="col-md-2">
+                <select name="profesionalId" class="form-select turnos-select" asp-items="ViewBag.ProfesionalId">
+                    <option value="">Todos los profesionales</option>
+                </select>
+            </div>
+
+            <!-- Fechas -->
+            <div class="col-md-1">
+                <input type="date" name="fechaDesde" class="form-control turnos-date" />
+            </div>
+            <div class="col-md-1">
+                <input type="date" name="fechaHasta" class="form-control turnos-date" />
+            </div>
+
+            <!-- Botón filtrar -->
+            <div class="col-md-12 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary turnos-btn-filter">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Tabla de turnos -->
+<div class="turnos-table-card">
+    <div class="table-responsive">
+        <table class="table table-hover turnos-table">
+            <thead>
+                <tr>
+                    <th>NIÑO/ADOLESCENTE</th>
+                    <th>PROFESIONAL</th>
+                    <th>INSTITUCIÓN</th>
+                    <th>FECHA</th>
+                    <th>HORA</th>
+                    <th>ESTADO</th>
+                    <th>ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@item.NinoAdolescente?.Apellido @item.NinoAdolescente?.Nombre</td>
+                            <td>@item.NombreProfesional</td>
+                            <td>@item.NombreInstitucion</td>
+                            <td>@item.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@item.Hora.ToString("HH:mm")</td>
+                            <td>
+                                <span class="badge @(item.EstadoTurno?.Nombre == "Completado" ? "bg-success" :
+                                                     item.EstadoTurno?.Nombre == "Cancelado" ? "bg-danger" :
+                                                     item.EstadoTurno?.Nombre == "Confirmado" ? "bg-info" : "bg-warning")">
+                                    @item.EstadoTurno?.Nombre
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a asp-action="Details" asp-route-id="@item.IdTurno"
+                                       class="btn btn-sm btn-outline-primary" title="Detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.IdTurno"
+                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="turnos-empty">
+                                <i class="bi bi-calendar-x"></i>
+                                <p>No hay turnos que coincidan con los filtros</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var tipoSeleccionado = '@tipoSeleccionado';
+            if (tipoSeleccionado) {
+                var select = document.querySelector('select[name="tipo"]');
+                if (select) {
+                    for (var i = 0; i < select.options.length; i++) {
+                        if (select.options[i].value === tipoSeleccionado) {
+                            select.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

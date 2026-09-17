@@ -1,0 +1,34 @@
+@model ResidenciaApp.Models.Turno
+
+@{
+    ViewData["Title"] = "Eliminar Turno";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-trash"></i> Eliminar Turno</h1>
+    <a asp-action="Index" class="btn btn-outline-primary">Volver</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5>¿Estás seguro que deseas eliminar este turno?</h5>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-3">Niño/Adolescente</dt>
+            <dd class="col-sm-9">@Model.NinoAdolescente?.Apellido @Model.NinoAdolescente?.Nombre</dd>
+
+            <dt class="col-sm-3">Fecha</dt>
+            <dd class="col-sm-9">@Model.Fecha.ToString("dd/MM/yyyy") @Model.Hora.ToString("HH:mm")</dd>
+
+            <dt class="col-sm-3">Estado</dt>
+            <dd class="col-sm-9">@Model.EstadoTurno?.Nombre</dd>
+        </dl>
+
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="IdTurno" />
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        </form>
+    </div>
+</div>

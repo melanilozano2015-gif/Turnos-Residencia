@@ -1,0 +1,82 @@
+@model IEnumerable<ResidenciaApp.Models.NinoAdolescente>
+
+@{
+    ViewData["Title"] = "Niños y Adolescentes";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-people"></i> Niños y Adolescentes</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-person-plus"></i> Nuevo
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get">
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]"
+                           class="form-control" placeholder="Buscar por nombre, apellido o DNI..." />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+                <div class="col-md-3 text-end">
+                    <span class="text-muted">Total: @Model.Count() registros</span>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>DNI</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Fecha Nac.</th>
+                        <th>Género</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Dni</td>
+                            <td>@item.Nombre</td>
+                            <td>@item.Apellido</td>
+                            <td>@item.FechaNacimiento.ToString("dd/MM/yyyy")</td>
+                            <td>@item.Genero</td>
+                            <td>@item.EstadoActual</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a asp-action="Details" asp-route-id="@item.IdNinoAdolescente"
+                                       class="btn btn-sm btn-outline-primary" title="Detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.IdNinoAdolescente"
+                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Turnos" asp-route-id="@item.IdNinoAdolescente"
+                                       class="btn btn-sm btn-outline-primary" title="Turnos">
+                                        <i class="bi bi-calendar-check"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

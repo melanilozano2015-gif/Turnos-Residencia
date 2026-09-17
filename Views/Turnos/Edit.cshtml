@@ -1,0 +1,103 @@
+@model ResidenciaApp.Models.Turno
+
+@{
+    ViewData["Title"] = "Editar Turno";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-pencil"></i> Editar Turno</h1>
+    <a asp-action="Index" class="btn btn-outline-primary">Volver</a>
+</div>
+
+<div class="form-page">
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="IdTurno" />
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Niño/Adolescente <span class="required">*</span></label>
+                <select asp-for="IdNinoAdolescente" class="form-select" asp-items="ViewBag.IdNinoAdolescente" disabled>
+                </select>
+                <input type="hidden" asp-for="IdNinoAdolescente" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Profesional <span class="required">*</span></label>
+                <input asp-for="NombreProfesional" class="form-control" />
+                <span asp-validation-for="NombreProfesional" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label">Institución <span class="required">*</span></label>
+                <input asp-for="NombreInstitucion" class="form-control" />
+                <span asp-validation-for="NombreInstitucion" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Tipo de turno <span class="required">*</span></label>
+                <select asp-for="TipoTurno" class="form-select">
+                    <option value="">Seleccionar...</option>
+                    <option value="Médico">Médico</option>
+                    <option value="Psicológico">Psicológico</option>
+                    <option value="Odontológico">Odontológico</option>
+                    <option value="Judicial">Judicial</option>
+                    <option value="Educativo">Educativo</option>
+                    <option value="Trabajo Social">Trabajo Social</option>
+                    <option value="Otro">Otro</option>
+                </select>
+                <span asp-validation-for="TipoTurno" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Estado <span class="required">*</span></label>
+                <select asp-for="IdEstadoTurno" class="form-select" asp-items="ViewBag.IdEstadoTurno">
+                </select>
+                <span asp-validation-for="IdEstadoTurno" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Fecha <span class="required">*</span></label>
+                <input asp-for="Fecha" class="form-control" type="date" />
+                <span asp-validation-for="Fecha" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Hora <span class="required">*</span></label>
+                <input asp-for="Hora" class="form-control" type="time" />
+                <span asp-validation-for="Hora" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <label class="form-label">Motivo</label>
+                <textarea asp-for="Motivo" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <label class="form-label">Resultado</label>
+                <textarea asp-for="Resultado" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <label class="form-label">Observaciones</label>
+                <textarea asp-for="Observaciones" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-submit">
+                Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

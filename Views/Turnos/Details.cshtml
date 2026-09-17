@@ -1,0 +1,93 @@
+@model ResidenciaApp.Models.Turno
+
+@{
+    ViewData["Title"] = "Detalles del Turno";
+}
+
+<div class="page-header">
+    <h1><i class="bi bi-calendar-check"></i> Detalles del Turno</h1>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.IdTurno" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a asp-action="Index" class="btn btn-outline-primary">Volver</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle"></i> Información del Turno
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Niño/Adolescente</dt>
+                    <dd class="col-sm-8">@Model.NinoAdolescente?.Apellido @Model.NinoAdolescente?.Nombre</dd>
+
+                    <dt class="col-sm-4">Profesional</dt>
+                    <dd class="col-sm-8">@Model.NombreProfesional</dd>
+
+                    <dt class="col-sm-4">Institución</dt>
+                    <dd class="col-sm-8">@Model.NombreInstitucion</dd>
+
+                    <dt class="col-sm-4">Fecha</dt>
+                    <dd class="col-sm-8">@Model.Fecha.ToString("dd/MM/yyyy")</dd>
+
+                    <dt class="col-sm-4">Hora</dt>
+                    <dd class="col-sm-8">@Model.Hora.ToString("HH:mm")</dd>
+
+                    <dt class="col-sm-4">Estado</dt>
+                    <dd class="col-sm-8">@Model.EstadoTurno?.Nombre</dd>
+
+                    <dt class="col-sm-4">Motivo</dt>
+                    <dd class="col-sm-8">@Model.Motivo</dd>
+
+                    <dt class="col-sm-4">Resultado</dt>
+                    <dd class="col-sm-8">@Model.Resultado</dd>
+
+                    <dt class="col-sm-4">Observaciones</dt>
+                    <dd class="col-sm-8">@Model.Observaciones</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clock-history"></i> Historial
+            </div>
+            <div class="card-body">
+                @if (Model.HistorialTurnos.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Acción</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var historial in Model.HistorialTurnos.OrderByDescending(h => h.FechaHora))
+                                {
+                                    <tr>
+                                        <td>@historial.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@historial.Accion</td>
+                                        <td>@historial.EstadoTurno?.Nombre</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No hay historial registrado.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
