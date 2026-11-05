@@ -1,4 +1,4 @@
-@model ResidenciaApp.Models.NinoAdolescente
+@model ResidenciaApp.DTOs.NinoDto
 
 @{
     ViewData["Title"] = "Registrar NNyA";
@@ -137,5 +137,22 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(function () {
+            $.extend($.validator.messages, {
+                required: "Este campo es obligatorio.",
+                email: "Ingresá un correo electrónico válido.",
+                maxlength: $.validator.format(
+                    "Ingresá como máximo {0} caracteres."
+                ),
+                minlength: $.validator.format(
+                    "Ingresá al menos {0} caracteres."
+                )
+            });
+        });
+    </script>
 }

@@ -1,209 +1,316 @@
+
+using ResidenciaApp.DTOs;
+using ResidenciaApp.Repositories;
+using ResidenciaApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ResidenciaApp.Data;
-using ResidenciaApp.Models;
 
 namespace ResidenciaApp.Controllers;
 
 [Authorize]
 public class TurnosController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ITurnoRepository _repository;
 
-    public TurnosController(ApplicationDbContext context)
+    public TurnosController(ITurnoRepository repository)
     {
-        _context = context;
+        _repository = repository;
     }
 
-    public async Task<IActionResult> Index(string? tab, string? tipo, string? search, int? estadoId, DateTime? fechaDesde, DateTime? fechaHasta)
+    // ==========================================
+    // LISTADO DE TURNOS
+    // ==========================================
+
+    [HttpGet]
+    public async Task<IActionResult> Index(
+        string? tab,
+        string? tipo,
+        string? search,
+        int? estadoId,
+        DateTime? fechaDesde,
+        DateTime? fechaHasta)
     {
         ViewData["Tab"] = tab ?? "Todos";
         ViewData["TipoSeleccionado"] = tipo ?? "";
         ViewData["SearchString"] = search ?? "";
-        ViewData["EstadoId"] = new SelectList(_context.EstadosTurno, "IdEstadoTurno", "Nombre", estadoId);
 
-        var turnos = _context.Turnos
-            .Include(t => t.NinoAdolescente)
-            .Include(t => t.EstadoTurno)
-            .AsQueryable();
+        var estados = await _repository.ObtenerEstadosAsync();
 
-        if (!string.IsNullOrEmpty(tab))
-        {
-            var hoy = DateTime.Today;
-            switch (tab)
-            {
-                case "Próximos":
-                    turnos = turnos.Where(t => t.Fecha >= hoy);
-                    break;
-                case "Pasados":
-                    turnos = turnos.Where(t => t.Fecha < hoy);
-                    break;
-                case "Cancelados":
-                    turnos = turnos.Where(t => t.EstadoTurno != null && t.EstadoTurno.Nombre == "Cancelado");
-                    break;
-            }
-        }
+        ViewData["EstadoId"] = new SelectList(
+            estados,
+            "IdEstadoTurno",
+            "Nombre",
+            estadoId
+        );
 
-        if (!string.IsNullOrEmpty(tipo))
-            turnos = turnos.Where(t => t.TipoTurno == tipo);
+        var turnos = await _repository.ObtenerTodosAsync(
+            tab,
+            tipo,
+            search,
+            estadoId,
+            fechaDesde,
+            fechaHasta
+        );
 
-        if (!string.IsNullOrEmpty(search))
-            turnos = turnos.Where(t =>
-                (t.NinoAdolescente != null && (t.NinoAdolescente.Nombre.Contains(search) || t.NinoAdolescente.Apellido.Contains(search))) ||
-                t.NombreProfesional.Contains(search) ||
-                t.NombreInstitucion.Contains(search) ||
-                t.TipoTurno.Contains(search));
-
-        if (estadoId.HasValue)
-            turnos = turnos.Where(t => t.IdEstadoTurno == estadoId.Value);
-
-        if (fechaDesde.HasValue)
-            turnos = turnos.Where(t => t.Fecha >= fechaDesde.Value);
-
-        if (fechaHasta.HasValue)
-            turnos = turnos.Where(t => t.Fecha <= fechaHasta.Value);
-
-        return View(await turnos.OrderByDescending(t => t.Fecha).ToListAsync());
+        return View(turnos);
     }
 
+    // ==========================================
+    // DETALLES DE UN TURNO
+    // ==========================================
+
+    [HttpGet]
     public async Task<IActionResult> Details(int? id)
     {
-        if (id == null) return NotFound();
+        if (id == null)
+            return NotFound();
 
-        var turno = await _context.Turnos
-            .Include(t => t.NinoAdolescente)
-            .Include(t => t.EstadoTurno)
-            .Include(t => t.HistorialTurnos).ThenInclude(h => h.EstadoTurno)
-            .FirstOrDefaultAsync(t => t.IdTurno == id);
+        var turno = await _repository
+            .ObtenerConHistorialAsync(id.Value);
 
-        if (turno == null) return NotFound();
+        if (turno == null)
+            return NotFound();
 
         return View(turno);
     }
 
-    public IActionResult Create(int? ninoId)
+    // ==========================================
+    // CREAR TURNO - GET
+    // ==========================================
+
+    [HttpGet]
+    public async Task<IActionResult> Create(int? ninoId)
     {
-        ViewData["IdNinoAdolescente"] = new SelectList(_context.NinosAdolescentes, "IdNinoAdolescente", "Apellido", ninoId);
-        ViewData["IdEstadoTurno"] = new SelectList(_context.EstadosTurno, "IdEstadoTurno", "Nombre");
-        return View();
+        var ninos = await _repository.ObtenerNinosAsync();
+        var estados = await _repository.ObtenerEstadosAsync();
+
+        ViewData["IdNinoAdolescente"] = new SelectList(
+            ninos,
+            "IdNinoAdolescente",
+            "Apellido",
+            ninoId
+        );
+
+        ViewData["IdEstadoTurno"] = new SelectList(
+            estados,
+            "IdEstadoTurno",
+            "Nombre"
+        );
+
+        var dto = new TurnoDto();
+
+        if (ninoId.HasValue)
+        {
+            dto.IdNinoAdolescente = ninoId.Value;
+        }
+
+        return View(dto);
     }
+
+    // ==========================================
+    // CREAR TURNO - POST
+    // ==========================================
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("IdNinoAdolescente,NombreProfesional,NombreInstitucion,IdEstadoTurno,TipoTurno,Fecha,Hora,Motivo,Observaciones")] Turno turno)
+    public async Task<IActionResult> Create(TurnoDto dto)
     {
         if (ModelState.IsValid)
         {
-            _context.Add(turno);
-
-            _context.HistorialTurnos.Add(new HistorialTurno
+            var turno = new Turno
             {
-                Turno = turno,
-                IdEstadoTurno = turno.IdEstadoTurno,
-                FechaHora = DateTime.Now,
-                Accion = "Creación",
-                Observacion = "Turno creado"
-            });
+                IdNinoAdolescente = dto.IdNinoAdolescente,
+                NombreProfesional = dto.NombreProfesional,
+                NombreInstitucion = dto.NombreInstitucion,
+                IdEstadoTurno = dto.IdEstadoTurno,
+                TipoTurno = dto.TipoTurno,
+                Fecha = dto.Fecha!.Value,
+                Hora = dto.Hora!.Value,
+                Motivo = dto.Motivo ?? string.Empty,
+                Resultado = dto.Resultado ?? string.Empty,
+                Observaciones = dto.Observaciones ?? string.Empty
+            };
 
-            await _context.SaveChangesAsync();
+            await _repository.AgregarAsync(turno);
+
             return RedirectToAction(nameof(Index));
         }
 
-        ViewData["IdNinoAdolescente"] = new SelectList(_context.NinosAdolescentes, "IdNinoAdolescente", "Apellido", turno.IdNinoAdolescente);
-        ViewData["IdEstadoTurno"] = new SelectList(_context.EstadosTurno, "IdEstadoTurno", "Nombre", turno.IdEstadoTurno);
-        return View(turno);
+        var ninos = await _repository.ObtenerNinosAsync();
+        var estados = await _repository.ObtenerEstadosAsync();
+
+        ViewData["IdNinoAdolescente"] = new SelectList(
+            ninos,
+            "IdNinoAdolescente",
+            "Apellido",
+            dto.IdNinoAdolescente
+        );
+
+        ViewData["IdEstadoTurno"] = new SelectList(
+            estados,
+            "IdEstadoTurno",
+            "Nombre",
+            dto.IdEstadoTurno
+        );
+
+        return View(dto);
     }
 
+    // ==========================================
+    // EDITAR TURNO - GET
+    // ==========================================
+
+    [HttpGet]
     public async Task<IActionResult> Edit(int? id)
     {
-        if (id == null) return NotFound();
+        if (id == null)
+            return NotFound();
 
-        var turno = await _context.Turnos.FindAsync(id);
-        if (turno == null) return NotFound();
+        var turno = await _repository.ObtenerPorIdAsync(id.Value);
 
-        ViewData["IdNinoAdolescente"] = new SelectList(_context.NinosAdolescentes, "IdNinoAdolescente", "Apellido", turno.IdNinoAdolescente);
-        ViewData["IdEstadoTurno"] = new SelectList(_context.EstadosTurno, "IdEstadoTurno", "Nombre", turno.IdEstadoTurno);
-        return View(turno);
+        if (turno == null)
+            return NotFound();
+
+        var dto = new TurnoDto
+        {
+            IdTurno = turno.IdTurno,
+            IdNinoAdolescente = turno.IdNinoAdolescente,
+            NombreProfesional = turno.NombreProfesional,
+            NombreInstitucion = turno.NombreInstitucion,
+            IdEstadoTurno = turno.IdEstadoTurno,
+            TipoTurno = turno.TipoTurno,
+            Fecha = turno.Fecha,
+            Hora = turno.Hora,
+            Motivo = turno.Motivo,
+            Resultado = turno.Resultado,
+            Observaciones = turno.Observaciones
+        };
+
+        var ninos = await _repository.ObtenerNinosAsync();
+        var estados = await _repository.ObtenerEstadosAsync();
+
+        ViewData["IdNinoAdolescente"] = new SelectList(
+            ninos,
+            "IdNinoAdolescente",
+            "Apellido",
+            dto.IdNinoAdolescente
+        );
+
+        ViewData["IdEstadoTurno"] = new SelectList(
+            estados,
+            "IdEstadoTurno",
+            "Nombre",
+            dto.IdEstadoTurno
+        );
+
+        return View(dto);
     }
+
+    // ==========================================
+    // EDITAR TURNO - POST
+    // ==========================================
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("IdTurno,IdNinoAdolescente,NombreProfesional,NombreInstitucion,IdEstadoTurno,TipoTurno,Fecha,Hora,Motivo,Resultado,Observaciones")] Turno turno)
+    public async Task<IActionResult> Edit(int id, TurnoDto dto)
     {
-        if (id != turno.IdTurno) return NotFound();
+        if (id != dto.IdTurno)
+            return NotFound();
 
-        if (ModelState.IsValid)
+        var turno = await _repository.ObtenerPorIdAsync(id);
+
+        if (turno == null)
+            return NotFound();
+
+        // Conservar el NNyA asociado originalmente.
+        dto.IdNinoAdolescente = turno.IdNinoAdolescente;
+
+        ModelState.Remove(
+            nameof(TurnoDto.IdNinoAdolescente)
+        );
+
+        if (!ModelState.IsValid)
         {
-            try
-            {
-                var turnoActual = await _context.Turnos.AsNoTracking().FirstOrDefaultAsync(t => t.IdTurno == id);
-                if (turnoActual == null) return NotFound();
+            var ninos = await _repository.ObtenerNinosAsync();
+            var estados = await _repository.ObtenerEstadosAsync();
 
-                var estadoAnteriorId = turnoActual.IdEstadoTurno;
+            ViewData["IdNinoAdolescente"] = new SelectList(
+                ninos,
+                "IdNinoAdolescente",
+                "Apellido",
+                dto.IdNinoAdolescente
+            );
 
-                _context.Update(turno);
+            ViewData["IdEstadoTurno"] = new SelectList(
+                estados,
+                "IdEstadoTurno",
+                "Nombre",
+                dto.IdEstadoTurno
+            );
 
-                if (estadoAnteriorId != turno.IdEstadoTurno)
-                {
-                    var estadoAnterior = await _context.EstadosTurno.FindAsync(estadoAnteriorId);
-                    var estadoNuevo = await _context.EstadosTurno.FindAsync(turno.IdEstadoTurno);
-
-                    _context.HistorialTurnos.Add(new HistorialTurno
-                    {
-                        IdTurno = turno.IdTurno,
-                        IdEstadoTurno = turno.IdEstadoTurno,
-                        FechaHora = DateTime.Now,
-                        Accion = "Cambio de estado",
-                        Observacion = $"Estado cambiado de {estadoAnterior?.Nombre} a {estadoNuevo?.Nombre}"
-                    });
-                }
-
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TurnoExists(turno.IdTurno)) return NotFound();
-                throw;
-            }
-            return RedirectToAction(nameof(Index));
+            return View(dto);
         }
 
-        ViewData["IdNinoAdolescente"] = new SelectList(_context.NinosAdolescentes, "IdNinoAdolescente", "Apellido", turno.IdNinoAdolescente);
-        ViewData["IdEstadoTurno"] = new SelectList(_context.EstadosTurno, "IdEstadoTurno", "Nombre", turno.IdEstadoTurno);
-        return View(turno);
+        // Actualizar solamente los campos permitidos.
+        turno.NombreProfesional = dto.NombreProfesional;
+        turno.NombreInstitucion = dto.NombreInstitucion;
+        turno.IdEstadoTurno = dto.IdEstadoTurno;
+        turno.TipoTurno = dto.TipoTurno;
+        turno.Fecha = dto.Fecha!.Value;
+        turno.Hora = dto.Hora!.Value;
+        turno.Motivo = dto.Motivo ?? string.Empty;
+        turno.Resultado = dto.Resultado ?? string.Empty;
+        turno.Observaciones = dto.Observaciones ?? string.Empty;
+
+        try
+        {
+            await _repository.ActualizarAsync(turno);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!await _repository.ExisteAsync(id))
+                return NotFound();
+
+            throw;
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 
+    // ==========================================
+    // ELIMINAR TURNO - GET
+    // ==========================================
+
+    [HttpGet]
     public async Task<IActionResult> Delete(int? id)
     {
-        if (id == null) return NotFound();
+        if (id == null)
+            return NotFound();
 
-        var turno = await _context.Turnos
-            .Include(t => t.NinoAdolescente)
-            .Include(t => t.EstadoTurno)
-            .FirstOrDefaultAsync(t => t.IdTurno == id);
+        var turno = await _repository
+            .ObtenerConHistorialAsync(id.Value);
 
-        if (turno == null) return NotFound();
+        if (turno == null)
+            return NotFound();
 
         return View(turno);
     }
+
+    // ==========================================
+    // ELIMINAR TURNO - POST
+    // ==========================================
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var turno = await _context.Turnos.FindAsync(id);
-        if (turno != null)
-        {
-            _context.Turnos.Remove(turno);
-            await _context.SaveChangesAsync();
-        }
-        return RedirectToAction(nameof(Index));
-    }
+        if (!await _repository.ExisteAsync(id))
+            return NotFound();
 
-    private bool TurnoExists(int id)
-    {
-        return _context.Turnos.Any(e => e.IdTurno == id);
+        await _repository.EliminarAsync(id);
+
+        return RedirectToAction(nameof(Index));
     }
 }

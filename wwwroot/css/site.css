@@ -243,40 +243,58 @@ a:hover {
   color: var(--apple-body-on-dark) !important;
 }
 
+
 /* ---- Sidebar ---- */
+
 .sidebar {
-  background-color: var(--apple-canvas);
-  border-right: 1px solid var(--apple-hairline);
-  min-height: calc(100vh - 44px);
+    background-color: #ffffff;
+    border-right: 1px solid #e0e0e0;
+    min-height: calc(100vh - 52px);
+    padding-top: 15px;
 }
 
-.sidebar .nav-link {
-  color: var(--apple-ink);
-  font-size: 14px;
-  padding: 12px 20px;
-  border-left: 3px solid transparent;
-  transition: all 0.2s ease;
-}
+    /* Enlaces del menú */
+    .sidebar .nav-link {
+        display: flex;
+        align-items: center;
+        color: #333333 !important;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 14px 18px;
+        border-left: 3px solid transparent;
+        transition: all 0.2s ease;
+    }
 
-.sidebar .nav-link:hover {
-  background-color: var(--apple-canvas-parchment);
-  border-left-color: var(--apple-primary);
-  color: var(--apple-primary);
-}
+        /* Al pasar el mouse */
+        .sidebar .nav-link:hover {
+            background-color: #f0f6ff;
+            border-left-color: #0066cc;
+            color: #0066cc !important;
+        }
 
-.sidebar .nav-link.active {
-  background-color: rgba(0, 102, 204, 0.08);
-  border-left-color: var(--apple-primary);
-  color: var(--apple-primary);
-  font-weight: 600;
-}
+        /* Opción activa */
+        .sidebar .nav-link.active {
+            background-color: #eaf3ff;
+            border-left-color: #0066cc;
+            color: #0066cc !important;
+            font-weight: 600;
+        }
 
-.sidebar .nav-link i {
-  margin-right: 10px;
-  width: 20px;
-  text-align: center;
-  opacity: 0.7;
-}
+        /* Íconos */
+        .sidebar .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+            color: inherit;
+            opacity: 1;
+        }
+
+    /* Separación de las opciones */
+    .sidebar .nav-item {
+        margin-bottom: 4px;
+    }
+
 
 /* ---- Tables ---- */
 .table {

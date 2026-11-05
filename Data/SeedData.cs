@@ -11,7 +11,7 @@ public static class SeedData
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-        string[] roles = new[] { "Director", "Educador", "Dirección" };
+        string[] roles = new[] { "Administrador", "Equipo Técnico" };
 
         foreach (var role in roles)
         {
@@ -24,22 +24,25 @@ public static class SeedData
         var adminEmail = "admin@arguelloinfancias.com";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
-        if (adminUser == null)
+
+        if (adminUser != null)
         {
-            adminUser = new IdentityUser
+            if (!await userManager.IsInRoleAsync(
+                adminUser, "Administrador"))
             {
-                UserName = adminEmail,
-                Email = adminEmail,
-                EmailConfirmed = true
-            };
+                var resultado = await userManager.AddToRoleAsync(
+                    adminUser, "Administrador");
 
-            var result = await userManager.CreateAsync(adminUser, "Admin123!");
-
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(adminUser, "Director");
+                if (!resultado.Succeeded)
+                {
+                    throw new InvalidOperationException(
+                        "No se pudo asignar el rol Administrador: " +
+                        string.Join(", ",
+                            resultado.Errors.Select(e => e.Description)));
+                }
             }
         }
+
 
         using var context = new ApplicationDbContext(
             serviceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>());

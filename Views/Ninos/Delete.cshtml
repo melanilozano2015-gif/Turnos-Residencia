@@ -1,31 +1,64 @@
+
 @model ResidenciaApp.Models.NinoAdolescente
 
 @{
-    ViewData["Title"] = "Eliminar";
+    ViewData["Title"] = "Dar de baja NNyA";
 }
 
 <div class="page-header">
-    <h1><i class="bi bi-trash"></i> Eliminar</h1>
-    <a asp-action="Index" class="btn btn-outline-primary">Volver</a>
+    <h1>
+        <i class="bi bi-person-dash"></i> Dar de baja NNyA
+    </h1>
+
+    <a asp-action="Index" class="btn btn-outline-primary">
+        Volver
+    </a>
 </div>
 
 <div class="card">
     <div class="card-body">
-        <h5>¿Estás seguro que deseas eliminar este registro?</h5>
+
+        <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Atención:</strong>
+            Estás por dar de baja este registro.
+            El NNyA dejará de aparecer en el listado de
+            registros activos, pero sus datos, turnos
+            e historial médico se conservarán.
+        </div>
+
+        <h5>¿Confirmás que querés dar de baja este registro?</h5>
+
         <hr />
+
         <dl class="row">
             <dt class="col-sm-3">DNI</dt>
             <dd class="col-sm-9">@Model.Dni</dd>
 
-            <dt class="col-sm-3">Nombre</dt>
-            <dd class="col-sm-9">@Model.Nombre @Model.Apellido</dd>
+            <dt class="col-sm-3">Nombre completo</dt>
+            <dd class="col-sm-9">
+                @Model.Nombre @Model.Apellido
+            </dd>
         </dl>
 
-        <form asp-action="Delete">
-            <input type="hidden" asp-for="IdNinoAdolescente" />
-            <button type="submit" class="btn btn-danger">
-                <i class="bi bi-trash"></i> Eliminar
-            </button>
+        <form asp-action="Delete" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   asp-for="IdNinoAdolescente" />
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-person-dash"></i>
+                    Confirmar baja
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    Cancelar
+                </a>
+            </div>
         </form>
+
     </div>
 </div>

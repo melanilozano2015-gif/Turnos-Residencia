@@ -1,19 +1,21 @@
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ResidenciaApp.Controllers;
 
-[AllowAnonymous]
 public class AccountController : Controller
 {
     private readonly SignInManager<IdentityUser> _signInManager;
 
-    public AccountController(SignInManager<IdentityUser> signInManager)
+    public AccountController(
+        SignInManager<IdentityUser> signInManager)
     {
         _signInManager = signInManager;
     }
 
+    [AllowAnonymous]
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
     {
@@ -21,31 +23,51 @@ public class AccountController : Controller
         return View();
     }
 
+    [AllowAnonymous]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(string email, string password, string? returnUrl = null)
+    public async Task<IActionResult> Login(
+        string email,
+        string password,
+        string? returnUrl = null)
     {
         ViewData["ReturnUrl"] = returnUrl;
 
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        if (string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(password))
         {
-            ModelState.AddModelError(string.Empty, "Email y contraseña son requeridos.");
+            ModelState.AddModelError(
+                string.Empty,
+                "Email y contraseña son requeridos.");
+
             return View();
         }
 
-        var result = await _signInManager.PasswordSignInAsync(email, password, isPersistent: true, lockoutOnFailure: false);
+        var result = await _signInManager.PasswordSignInAsync(
+            email.Trim(),
+            password,
+            isPersistent: false,
+            lockoutOnFailure: true);
 
         if (result.Succeeded)
         {
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            if (!string.IsNullOrEmpty(returnUrl) &&
+                Url.IsLocalUrl(returnUrl))
+            {
                 return Redirect(returnUrl);
+            }
+
             return RedirectToAction("Index", "Dashboard");
         }
 
-        ModelState.AddModelError(string.Empty, "Email o contraseña incorrectos.");
+        ModelState.AddModelError(
+            string.Empty,
+            "Credenciales incorrectas o acceso temporalmente bloqueado.");
+
         return View();
     }
 
+    [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
@@ -54,3 +76,4 @@ public class AccountController : Controller
         return RedirectToAction("Login");
     }
 }
+

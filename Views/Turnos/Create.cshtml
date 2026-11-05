@@ -1,5 +1,4 @@
-@model ResidenciaApp.Models.Turno
-
+@model ResidenciaApp.DTOs.TurnoDto
 @{
     ViewData["Title"] = "Nuevo Turno";
 }
@@ -74,6 +73,7 @@
             <div class="col-12">
                 <label class="form-label">Motivo</label>
                 <textarea asp-for="Motivo" class="form-control" rows="2"></textarea>
+                <span asp-validation-for="Motivo" class="text-danger"></span>
             </div>
         </div>
 
@@ -81,6 +81,7 @@
             <div class="col-12">
                 <label class="form-label">Observaciones</label>
                 <textarea asp-for="Observaciones" class="form-control" rows="2"></textarea>
+                <span asp-validation-for="Observaciones" class="text-danger"></span>
             </div>
         </div>
 

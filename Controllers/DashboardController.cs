@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -5,7 +6,7 @@ using ResidenciaApp.Data;
 
 namespace ResidenciaApp.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Administrador,Equipo Técnico")]
 public class DashboardController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -19,21 +20,41 @@ public class DashboardController : Controller
     {
         var viewModel = new DashboardViewModel
         {
-            TotalNinos = await _context.NinosAdolescentes.CountAsync(),
+            TotalNinos = await _context.NinosAdolescentes
+                .AsNoTracking()
+                .CountAsync(),
+
             TurnosPendientes = await _context.Turnos
-                .CountAsync(t => t.EstadoTurno.Nombre == "Pendiente"),
+                .AsNoTracking()
+                .CountAsync(t =>
+                    t.EstadoTurno.Nombre == "Pendiente"),
+
             TurnosHoy = await _context.Turnos
-                .CountAsync(t => t.Fecha.Date == DateTime.Today),
-            TotalProfesionales = await _context.Profesionales.CountAsync(),
-            TotalInstituciones = await _context.Instituciones.CountAsync(),
+                .AsNoTracking()
+                .CountAsync(t =>
+                    t.Fecha.Date == DateTime.Today),
+
+            TotalProfesionales = await _context.Profesionales
+                .AsNoTracking()
+                .CountAsync(),
+
+            TotalInstituciones = await _context.Instituciones
+                .AsNoTracking()
+                .CountAsync(),
+
             UltimosNinos = await _context.NinosAdolescentes
+                .AsNoTracking()
                 .OrderByDescending(n => n.FechaNacimiento)
                 .Take(5)
                 .ToListAsync(),
+
             ProximosTurnos = await _context.Turnos
+                .AsNoTracking()
                 .Include(t => t.NinoAdolescente)
                 .Include(t => t.EstadoTurno)
-                .Where(t => t.EstadoTurno.Nombre == "Pendiente" && t.Fecha >= DateTime.Now)
+                .Where(t =>
+                    t.EstadoTurno.Nombre == "Pendiente" &&
+                    t.Fecha >= DateTime.Now)
                 .OrderBy(t => t.Fecha)
                 .Take(5)
                 .ToListAsync()
@@ -50,6 +71,10 @@ public class DashboardViewModel
     public int TurnosHoy { get; set; }
     public int TotalProfesionales { get; set; }
     public int TotalInstituciones { get; set; }
-    public List<Models.NinoAdolescente> UltimosNinos { get; set; } = new();
-    public List<Models.Turno> ProximosTurnos { get; set; } = new();
+
+    public List<Models.NinoAdolescente> UltimosNinos
+    { get; set; } = new();
+
+    public List<Models.Turno> ProximosTurnos
+    { get; set; } = new();
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ResidenciaApp.Data;
+using ResidenciaApp.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,12 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+
+// Registrar repositorio de niños y adolescentes
+builder.Services.AddScoped<INinoRepository, NinoRepository>();
+
+// Registrar repositorio de turnos médicos
+builder.Services.AddScoped<ITurnoRepository, TurnoRepository>();
 
 var app = builder.Build();
 

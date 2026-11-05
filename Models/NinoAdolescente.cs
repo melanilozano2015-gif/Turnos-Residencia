@@ -1,3 +1,4 @@
+
 using System.ComponentModel.DataAnnotations;
 
 namespace ResidenciaApp.Models;
@@ -39,6 +40,9 @@ public class NinoAdolescente
     [StringLength(50)]
     public string EstadoActual { get; set; } = "En residencia";
 
+    // Baja lógica: no elimina el registro físicamente
+    public bool Activo { get; set; } = true;
+
     [StringLength(200)]
     public string Escolaridad { get; set; } = string.Empty;
 
@@ -55,5 +59,6 @@ public class NinoAdolescente
     [StringLength(500)]
     public string Domicilio { get; set; } = string.Empty;
 
-    public ICollection<Turno> Turnos { get; set; } = new List<Turno>();
+    public ICollection<Turno> Turnos { get; set; }
+        = new List<Turno>();
 }
